@@ -19,3 +19,5 @@ util.o:	util.c
 clean:
 	rm -rf *.o a.out auto debug test
 
+cells:
+	echo $(perl -e 'for ($i=0; $i < 100; $i++) { print rand(100) % 2; }') > cells
