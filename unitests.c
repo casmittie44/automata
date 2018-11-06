@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "convert.h"
-#include "util.h"
+#include "util.c"
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 #include <string.h>
