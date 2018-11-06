@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
+#include <wchar.h>
+#include <time.h>
 #include "convert.h"
 
 /***********************************************
@@ -8,6 +11,7 @@
  * what symbols represent one and zero cells
  ***********************************************/
 #define MAX 100
+// #define ONE "\u25A0" // black square
 #define ONE "*"
 #define ZERO " "
 
@@ -24,10 +28,12 @@ char applyRule(char* rules, char* cells, int i, int len) {
    char right, cur, left;
    cur = cells[i];
    if(i == 0)
-      left = 0;
+      // left = 0;
+      return 0;
  
    else if(i == (len-1)) 
-      right = 0;
+      //    right = 0;
+      return 0;
 
    else {
       left = cells[i-1];
@@ -80,46 +86,102 @@ char* simpleEvolve(char* rules, char* cells, int len) {
    return ret;
 }
 
+/*******************************************************************
+ * Applies a random evolution rule at each stage.
+ * It takes a dummy first parameter, so that it matches the
+ * signature needed by the Evolution function pointer used in main()
+*******************************************************************/
+char* randomEvolve(char* dummy, char* cells, int len) {
+   char rules[8];
+
+   /*The following block uses a completely random rule every time.
+    * It is pretty boring, since random rules tend to be ugly really
+    * simple.
+     convertRule(rand() % 256 + 1, rules);
+   */
+
+   /* This block randomly picks from a set of "interesting rules": */
+   int choices[] = {30, 60, 54, 90, 110, 188, 182, 126, 124, 220, 24};
+   int index = rand() % (sizeof (choices) / sizeof(choices[0]));
+   convertRule(choices[index], rules);
+   char* ret = (char*)malloc(len);
+   for(int i=0; i<len; i++) 
+      ret[i] = applyRule(rules, cells, i, len);
+   
+   return ret;
+}
+
 /********************************************************************
- *
+ * Prints out a stage in the evolution of a cellular automaton.
+ * It uses the #defined constants ZERO, ONE to display the characters
+ * chosen to represent these states. Generally, either asterisks or black
+ * unicode squares are used to represent 1 and a space is used to represent
+ * 0.
  *******************************************************************/
 void printCells(char* cells, int len) {
+   setlocale(LC_ALL, "en_US.UTF-8");
    for(int i = 0; i < len; i++) {
-      if(cells[i] == 0)
-	 printf(ZERO);
+      if(cells[i] == 0) 
+	 printf("%s", ZERO);
       else
-	 printf(ONE);
+	 printf("%s", ONE);
+
    }
 
    printf("\n");
 }
 
 int main(int argc, char** argv) {
+   char* (*Evolution)(char*, char*, int);
+   char rules[8];
+   int ruleNumber, numSteps = 20;
+   
    if(argc < 2) {
-      printf("Usage: Enter an elementary cellular automaton rule number to be evolved.\n");
-      exit(0);
+      srand(time(0));
+      Evolution = randomEvolve;
+      numSteps = 50;
    }
 
-   int numSteps = 20;
-   int ruleNumber = atoi(argv[1]);
-   if(argc > 2)
-      numSteps = atoi(argv[2]);
-   
-   char rules[8];
-   convertRule(ruleNumber, rules);
+   else {
+      ruleNumber = atoi(argv[1]);
+      if(argc > 2)
+	 numSteps = atoi(argv[2]);
 
-   // Debug message
-   printf("Debug: rule is: ");
-   for(int i = 0; i < 8; i++)
-      printf("%d", rules[i]);
-   printf("\n");
+      convertRule(ruleNumber, rules);
+      Evolution = simpleEvolve;
+      // Print rule number
+      printf("Rule: ");
+      for(int i = 0; i < 8; i++)
+	 printf("%d", rules[i]);
+      printf("\n");
+   }
   
+   // Set up inital conditions
+   // Read from file cells for setup
    char* lastStep = (char*)malloc(MAX);
-   lastStep[MAX / 2 - 1] = 1;
+   FILE* initCondsFile = fopen("cells", "r");
+   if(initCondsFile == NULL)
+      // If file error, setup with one inital black cell
+      // in center of the field.
+      lastStep[MAX / 2 - 1] = 1;
+   else {
+      // NEED AN ERROR CHECK IN CASE WE HIT EOF
+      // add this
+      fread(lastStep, 1, MAX, initCondsFile);
+      
+      // Convert '0' and '1' to 0 and 1
+      for(int i = 0; i < MAX; i++) {
+	 if(lastStep[i] == '0')
+	    lastStep[i] = 0;
+	 else
+	    lastStep[i] = 1;
+      }	 
+   }
+
    char* nextStep;
    for(int i = 0; i < numSteps; i++) {
       printCells(lastStep, MAX);
-      nextStep = simpleEvolve(rules, lastStep, MAX);
+      nextStep = Evolution(rules, lastStep, MAX);
       free(lastStep);
       lastStep = nextStep;
    }
@@ -127,3 +189,4 @@ int main(int argc, char** argv) {
    free(lastStep);
    return 0;
 }
+

@@ -16,6 +16,7 @@ convert.o:	convert.c convert.h
 
 util.o:	util.c
 	$(CC) $(CDEBUG) -c util.c
+
 clean:	FORCE
 	rm -rf *.o a.out auto debug test
 

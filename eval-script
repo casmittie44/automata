@@ -1,0 +1,10 @@
+#! /bin/bash
+
+rm evals
+echo $(perl -e 'print "0"x49; print "1"; print "0" x 50;') > cells
+
+for i in `seq 1 256`
+do
+	./auto $i >> evals
+	printf "\n" >> evals
+done
