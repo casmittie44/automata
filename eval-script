@@ -1,9 +1,19 @@
 #! /bin/bash
 
+# Before running this script, run 'make auto' to ensure we have an
+# executable to call. Also, this script creates a file call 'evals'
+# in the current directory and will overwrite any file with that name.
+# Don't say I didn't warn you.
+
+# Remove previous evaluation file
 rm evals
+
+# Set up cells with a single black cell
 echo $(perl -e 'print "0"x49; print "1"; print "0" x 50;') > cells
 
-for i in `seq 1 256`
+# Loop through all the elementary cellular automata rules, appending
+# the result to the file 'evals'
+for i in `seq 0 255`
 do
 	./auto $i >> evals
 	printf "\n" >> evals
