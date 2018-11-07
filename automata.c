@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <locale.h>
-#include <wchar.h>
 #include <time.h>
 #include "convert.h"
 
@@ -119,7 +117,6 @@ char* randomEvolve(char* dummy, char* cells, int len) {
  * 0.
  *******************************************************************/
 void printCells(char* cells, int len) {
-   setlocale(LC_ALL, "en_US.UTF-8");
    for(int i = 0; i < len; i++) {
       if(cells[i] == 0) 
 	 printf("%s", ZERO);
@@ -166,12 +163,15 @@ int main(int argc, char** argv) {
       lastStep[MAX / 2 - 1] = 1;
    else {
       // NEED AN ERROR CHECK IN CASE WE HIT EOF
-      // add this
-      fread(lastStep, 1, MAX, initCondsFile);
+      int charsRead = fread(lastStep, 1, MAX, initCondsFile);
+      if(charsRead < MAX)
+      {
+	 memset(lastStep + charsRead, 0, MAX - charsRead - 1); 
+      }
       
       // Convert '0' and '1' to 0 and 1
       for(int i = 0; i < MAX; i++) {
-	 if(lastStep[i] == '0')
+	 if(lastStep[i] == '0' || lastStep[i] == 0)
 	    lastStep[i] = 0;
 	 else
 	    lastStep[i] = 1;
@@ -189,4 +189,3 @@ int main(int argc, char** argv) {
    free(lastStep);
    return 0;
 }
-
