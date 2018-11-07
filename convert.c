@@ -3,10 +3,12 @@
 #include <math.h>
 #include <string.h>
 
-/************************************************************************************************
- * Takes an integer and target_base then returns a dynamically allocated array of characters containing
- * the digits of the number in the target base, little-endian style. In other words,
- * the least significant digits are stored in the smallest indexes of the array.
+/*****************************************************************************
+ * Takes an integer and target_base then returns a dynamically
+ * allocated array of characters containing the digits of the number
+ * in the target base, little-endian style. In other words, the least
+ * significant digits are stored in the smallest indexes of the array.
+ * The returned array is 32 characters long.
  *****************************************************************************/
 unsigned char* convert(unsigned int number, unsigned int target_base) {
    int digits;
@@ -35,9 +37,10 @@ unsigned char* convert(unsigned int number, unsigned int target_base) {
    return ret;
 }
 
-/* Prints the significant digits stored in an array of characters,
-   little endian style. Ignores leading zeroes
- */
+/*****************************************************************
+ * Prints the significant digits stored in an array of characters,
+ * little endian style. Ignores leading zeroes
+ *****************************************************************/
 void PrintDigits(unsigned char* ptr, int len) {
    int i = len-1;
    while(ptr[i] == 0)
@@ -57,7 +60,7 @@ int main(int argc, char** argv) {
    if(argc > 1) {
       int number = atoi(argv[1]);
       unsigned char* digits = convert(number, 2);
-      print_sig_digits(digits, 32, '\n');
+      PrintDigits(digits, 32);
    }
 
    else
